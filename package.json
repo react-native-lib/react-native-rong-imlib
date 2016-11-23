@@ -1,15 +1,70 @@
 {
-  "name": "react-native-rong-imlib",
-  "version": "0.1.1",
+  "_args": [
+    [
+      {
+        "raw": "react-native-rongcloud@git+https://github.com/react-native-lib/react-native-rong-imlib.git",
+        "scope": null,
+        "escapedName": "react-native-rongcloud",
+        "name": "react-native-rongcloud",
+        "rawSpec": "git+https://github.com/react-native-lib/react-native-rong-imlib.git",
+        "spec": "git+https://github.com/react-native-lib/react-native-rong-imlib.git",
+        "type": "hosted",
+        "hosted": {
+          "type": "github",
+          "ssh": "git@github.com:react-native-lib/react-native-rong-imlib.git",
+          "sshUrl": "git+ssh://git@github.com/react-native-lib/react-native-rong-imlib.git",
+          "httpsUrl": "git+https://github.com/react-native-lib/react-native-rong-imlib.git",
+          "gitUrl": "git://github.com/react-native-lib/react-native-rong-imlib.git",
+          "shortcut": "github:react-native-lib/react-native-rong-imlib",
+          "directUrl": "https://raw.githubusercontent.com/react-native-lib/react-native-rong-imlib/master/package.json"
+        }
+      },
+      "/Users/joshua/vanke/newwork"
+    ]
+  ],
+  "_from": "git+https://github.com/react-native-lib/react-native-rong-imlib.git",
+  "_id": "react-native-rong-imlib@0.1.1",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/react-native-rong-imlib",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "react-native-rongcloud@git+https://github.com/react-native-lib/react-native-rong-imlib.git",
+    "scope": null,
+    "escapedName": "react-native-rongcloud",
+    "name": "react-native-rongcloud",
+    "rawSpec": "git+https://github.com/react-native-lib/react-native-rong-imlib.git",
+    "spec": "git+https://github.com/react-native-lib/react-native-rong-imlib.git",
+    "type": "hosted",
+    "hosted": {
+      "type": "github",
+      "ssh": "git@github.com:react-native-lib/react-native-rong-imlib.git",
+      "sshUrl": "git+ssh://git@github.com/react-native-lib/react-native-rong-imlib.git",
+      "httpsUrl": "git+https://github.com/react-native-lib/react-native-rong-imlib.git",
+      "gitUrl": "git://github.com/react-native-lib/react-native-rong-imlib.git",
+      "shortcut": "github:react-native-lib/react-native-rong-imlib",
+      "directUrl": "https://raw.githubusercontent.com/react-native-lib/react-native-rong-imlib/master/package.json"
+    }
+  },
+  "_requiredBy": [],
+  "_resolved": "git+https://github.com/react-native-lib/react-native-rong-imlib.git#a449d090ead8264eb9098155abb957bdf825ac7a",
+  "_shasum": "1a8c1e8c0baaaf39760493c1efb981ac61514066",
+  "_shrinkwrap": null,
+  "_spec": "react-native-rongcloud@git+https://github.com/react-native-lib/react-native-rong-imlib.git",
+  "_where": "/Users/joshua/vanke/newwork",
+  "author": {
+    "name": "reactnativecn"
+  },
+  "bugs": {
+    "url": "https://github.com/reactnativecn/react-native-rong-imlib/issues"
+  },
+  "dependencies": {
+    "fbemitter": "^2.0.2"
+  },
   "description": "React Native下的融云SDK (IMLib) 封装",
-  "main": "src/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/reactnativecn/react-native-rong-imlib.git"
-  },
+  "devDependencies": {},
+  "gitHead": "a449d090ead8264eb9098155abb957bdf825ac7a",
+  "homepage": "https://github.com/reactnativecn/react-native-rong-imlib#readme",
   "keywords": [
     "react",
     "native",
@@ -19,16 +74,20 @@
     "im",
     "chat"
   ],
-  "author": "reactnativecn",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/reactnativecn/react-native-rong-imlib/issues"
-  },
+  "main": "src/index.js",
+  "name": "react-native-rong-imlib",
+  "optionalDependencies": {},
   "peerDependencies": {
     "react-native": ">=0.18.0"
   },
-  "homepage": "https://github.com/reactnativecn/react-native-rong-imlib#readme",
-  "dependencies": {
-    "fbemitter": "^2.0.2"
-  }
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reactnativecn/react-native-rong-imlib.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "0.1.1"
 }
