@@ -20,6 +20,27 @@
         }
       },
       "/Users/joshua/vanke/newwork"
+    ],
+    [
+      {
+        "raw": "react-native-rongcloud@git+https://github.com/react-native-lib/react-native-rong-imlib.git",
+        "scope": null,
+        "escapedName": "react-native-rongcloud",
+        "name": "react-native-rongcloud",
+        "rawSpec": "git+https://github.com/react-native-lib/react-native-rong-imlib.git",
+        "spec": "git+https://github.com/react-native-lib/react-native-rong-imlib.git",
+        "type": "hosted",
+        "hosted": {
+          "type": "github",
+          "ssh": "git@github.com:react-native-lib/react-native-rong-imlib.git",
+          "sshUrl": "git+ssh://git@github.com/react-native-lib/react-native-rong-imlib.git",
+          "httpsUrl": "git+https://github.com/react-native-lib/react-native-rong-imlib.git",
+          "gitUrl": "git://github.com/react-native-lib/react-native-rong-imlib.git",
+          "shortcut": "github:react-native-lib/react-native-rong-imlib",
+          "directUrl": "https://raw.githubusercontent.com/react-native-lib/react-native-rong-imlib/master/package.json"
+        }
+      },
+      "/Users/joshua/vanke/newwork"
     ]
   ],
   "_from": "git+https://github.com/react-native-lib/react-native-rong-imlib.git",
@@ -47,8 +68,8 @@
     }
   },
   "_requiredBy": [],
-  "_resolved": "git+https://github.com/react-native-lib/react-native-rong-imlib.git#a449d090ead8264eb9098155abb957bdf825ac7a",
-  "_shasum": "1a8c1e8c0baaaf39760493c1efb981ac61514066",
+  "_resolved": "git+https://github.com/react-native-lib/react-native-rong-imlib.git#c1d9b1399c104a98bf673f3620f3dd38c63cb260",
+  "_shasum": "5275466b82f51fe813887ff025a558708303f93b",
   "_shrinkwrap": null,
   "_spec": "react-native-rongcloud@git+https://github.com/react-native-lib/react-native-rong-imlib.git",
   "_where": "/Users/joshua/vanke/newwork",
