@@ -11,7 +11,7 @@ android {
         versionName "1.0"
 
         manifestPlaceholders = [
-                RONG_CLOUD_APP_KEY : "mgb7ka1nm3gcg"
+                RONG_CLOUD_APP_KEY : "xxx"
         ]
     }
 
