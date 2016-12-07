@@ -5,7 +5,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -24,17 +23,12 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.UiThreadUtil;
 import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -757,6 +751,11 @@ public class IMLibModule extends ReactContextBaseJavaModule implements RongIMCli
                 promise.reject("" + errorCode.getValue(), errorCode.getMessage());
             }
         });
+    }
+
+    @ReactMethod
+    public void setBadgeVal(int badge) {
+//        LauncherBadgeHelper.setBadgeCount(getCurrentActivity(), badge);
     }
 
 

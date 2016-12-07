@@ -133,3 +133,12 @@ export const clearMessages = async (conversationType, targetId)=>{
     return await RongIMLib.clearMessages(conversationType, targetId)
 }
 
+// version > 1.2.0
+export const setBadgeVal = (val)=>{
+    try {
+        RongIMLib.setBadgeVal(val||0);
+    }catch (error){
+        console.log("setBadgeVal:", val, "=>", error);
+    }
+}
+

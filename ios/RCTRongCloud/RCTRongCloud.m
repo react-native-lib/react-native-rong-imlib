@@ -525,6 +525,19 @@ RCT_EXPORT_METHOD(clearMessages:(RCConversationType)conversationType
     resolve(retNum);
 }
 
+/*!
+ 设置未读消息个数
+ 
+ @param conversationType    会话类型，不支持聊天室
+ @param targetId            目标会话ID
+ @return                    是否删除成功
+ */
+RCT_EXPORT_METHOD(setBadgeVal:(int)badgeVal)
+{
+    [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
+    [UIApplication sharedApplication].applicationIconBadgeNumber = badgeVal;
+}
+
 #pragma mark - delegate
 - (void)onReceived:(RCMessage *)message
               left:(int)nLeft
