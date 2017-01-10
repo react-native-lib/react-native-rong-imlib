@@ -6,7 +6,7 @@
 //  Copyright © 2016 erica. All rights reserved.
 //
 
-#import "RCTConvert.h"
+#import <React/RCTConvert.h>
 #import <RongIMLib/RongIMLib.h>
 
 @interface RCTConvert(RongCloud)

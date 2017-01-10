@@ -9,10 +9,10 @@
 #import "RCTRongCloud.h"
 #import <RongIMLib/RongIMLib.h>
 #import "RCTConvert+RongCloud.h"
-#import "RCTUtils.h"
-#import "RCTEventDispatcher.h"
+#import <React/RCTUtils.h>
+#import <React/RCTEventDispatcher.h>
 #import "RCTRongCloudVoiceManager.h"
-#import "RCTImageLoader.h"
+#import <React/RCTImageLoader.h>
 
 #define OPERATION_FAILED (@"operation returns false.")
 
