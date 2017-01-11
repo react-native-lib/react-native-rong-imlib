@@ -125,7 +125,7 @@ RCT_EXPORT_METHOD(getConversationList:(RCTPromiseResolveBlock)resolve reject:(RC
     resolve(newArray);
 }
 
-RCT_EXPORT_METHOD(getLatestMessages: (RCConversationType) type targetId:(NSString*) targetId count:(int) count
+RCT_EXPORT_METHOD(getLatestMessages: (RCConversationType) type targetId:(NSString*) targetId count:(NSInteger) count
                   resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 {
     NSArray* array = [[RCIMClient sharedRCIMClient] getLatestMessages:type targetId:targetId count:count];
@@ -308,13 +308,18 @@ RCT_EXPORT_METHOD(getConversation:(RCConversationType)conversationType
  */
 RCT_EXPORT_METHOD(getHistoryMessages:(RCConversationType)conversationType
                   targetId:(NSString *)targetId
-                  oldestMessageId:(long)oldestMessageId
-                  count:(int)count
+                  oldestMessageId:(NSInteger)oldestMessageId
+                  count:(NSInteger)count
                   resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 {
     RCIMClient* client = [RCIMClient sharedRCIMClient];
-    NSArray *ret = [client getHistoryMessages:conversationType targetId:targetId oldestMessageId:oldestMessageId count:count];
-    resolve(ret);
+    NSArray *array = [client getHistoryMessages:conversationType targetId:targetId oldestMessageId:oldestMessageId count:count];
+    NSMutableArray* newArray = [NSMutableArray new];
+    for (RCMessage* msg in array) {
+        NSDictionary* convDic = [self.class _convertMessage:msg];
+        [newArray addObject:convDic];
+    }
+    resolve(newArray);
 }
 
 
@@ -337,13 +342,18 @@ RCT_EXPORT_METHOD(getHistoryMessages:(RCConversationType)conversationType
 RCT_EXPORT_METHOD(getHistoryMessages2:(RCConversationType)conversationType
                   targetId:(NSString *)targetId
                   objectName:(NSString *)objectName
-                  oldestMessageId:(long)oldestMessageId
-                  count:(int)count
+                  oldestMessageId:(NSInteger)oldestMessageId
+                  count:(NSInteger)count
                   resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 {
     RCIMClient* client = [RCIMClient sharedRCIMClient];
-    NSArray *ret = [client getHistoryMessages:conversationType targetId:targetId objectName:objectName oldestMessageId:oldestMessageId count:count];
-    resolve(ret);
+    NSArray *array = [client getHistoryMessages:conversationType targetId:targetId objectName:objectName oldestMessageId:oldestMessageId count:count];
+    NSMutableArray* newArray = [NSMutableArray new];
+    for (RCMessage* msg in array) {
+        NSDictionary* convDic = [self.class _convertMessage:msg];
+        [newArray addObject:convDic];
+    }
+    resolve(newArray);
 }
 
 /*!
@@ -364,14 +374,19 @@ RCT_EXPORT_METHOD(getHistoryMessages2:(RCConversationType)conversationType
 RCT_EXPORT_METHOD(getHistoryMessages3:(RCConversationType)conversationType
                   targetId:(NSString *)targetId
                   objectName:(NSString *)objectName
-                  baseMessageId:(long)baseMessageId
+                  baseMessageId:(NSInteger)baseMessageId
                   isForward:(BOOL)isForward
-                  count:(int)count
+                  count:(NSInteger)count
                   resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
 {
     RCIMClient* client = [RCIMClient sharedRCIMClient];
-    NSArray *ret = [client getHistoryMessages:conversationType targetId:targetId objectName:objectName baseMessageId:baseMessageId isForward:isForward count:count];
-    resolve(ret);
+    NSArray *array = [client getHistoryMessages:conversationType targetId:targetId objectName:objectName baseMessageId:baseMessageId isForward:isForward count:count];
+    NSMutableArray* newArray = [NSMutableArray new];
+    for (RCMessage* msg in array) {
+        NSDictionary* convDic = [self.class _convertMessage:msg];
+        [newArray addObject:convDic];
+    }
+    resolve(newArray);
 }
 
 /*!
@@ -532,7 +547,7 @@ RCT_EXPORT_METHOD(clearMessages:(RCConversationType)conversationType
  @param targetId            目标会话ID
  @return                    是否删除成功
  */
-RCT_EXPORT_METHOD(setBadgeVal:(int)badgeVal)
+RCT_EXPORT_METHOD(setBadgeVal:(NSInteger)badgeVal)
 {
     [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
     [UIApplication sharedApplication].applicationIconBadgeNumber = badgeVal;
