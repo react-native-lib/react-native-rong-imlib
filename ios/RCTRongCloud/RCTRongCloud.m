@@ -258,6 +258,60 @@ RCT_EXPORT_METHOD(stopPlayVoice)
 #pragma extra
 
 /*!
+ 删除指定类型的会话
+ 
+ @param conversationTypeList 会话类型的数组(需要将RCConversationType转为NSNumber构建Array)
+ @return                        是否删除成功
+ */
+RCT_EXPORT_METHOD(clearConversations:(NSArray *)conversationTypeList
+                  resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+{
+    RCIMClient* client = [RCIMClient sharedRCIMClient];
+    Boolean ret = [client clearConversations:conversationTypeList];
+    NSNumber *retNum = [NSNumber numberWithBool: ret];
+    resolve(retNum);
+}
+
+
+/*!
+ 从本地存储中删除会话
+ 
+ @param conversationType    会话类型
+ @param targetId            目标会话ID
+ @return                    是否删除成功
+ 
+ @discussion 此方法会从本地存储中删除该会话，但是不会删除会话中的消息。
+ */
+RCT_EXPORT_METHOD(removeConversation:(RCConversationType)conversationType
+                  targetId:(NSString *)targetId
+                  resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+{
+    RCIMClient* client = [RCIMClient sharedRCIMClient];
+    Boolean ret = [client removeConversation:conversationType targetId:targetId];
+    NSNumber *retNum = [NSNumber numberWithBool: ret];
+    resolve(retNum);
+}
+
+/*!
+ 设置会话的置顶状态
+ 
+ @param conversationType    会话类型
+ @param targetId            目标会话ID
+ @param isTop               是否置顶
+ @return                    设置是否成功
+ */
+RCT_EXPORT_METHOD(setConversationToTop:(RCConversationType)conversationType
+                  targetId:(NSString *)targetId
+                  isTop:(BOOL)isTop
+                  resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject)
+{
+    RCIMClient* client = [RCIMClient sharedRCIMClient];
+    Boolean ret = [client setConversationToTop:conversationType targetId:targetId isTop:isTop];
+    NSNumber *retNum = [NSNumber numberWithBool: ret];
+    resolve(retNum);
+}
+
+/*!
  获取会话列表
  
  @param conversationTypeList 会话类型的数组(需要将RCConversationType转为NSNumber构建Array)
@@ -289,6 +343,7 @@ RCT_EXPORT_METHOD(getConversation:(RCConversationType)conversationType
     RCConversation *ret = [client getConversation:conversationType targetId:targetId];
     resolve(ret);
 }
+
 
 
 /*!

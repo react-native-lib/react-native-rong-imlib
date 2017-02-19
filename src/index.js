@@ -80,6 +80,29 @@ export const stopPlayVoice = ()=>{
 }
 
 //extra
+export const clearConversations = async (conversationTypeList)=>{
+    try {
+        return await RongIMLib.clearConversations(conversationTypeList)
+    }catch (error){
+        console.log("clearConversations:", conversationTypeList, "=>", error);
+    }
+}
+
+export const removeConversation = async (conversationType, targetId)=>{
+    try {
+        return await RongIMLib.removeConversation(conversationType, targetId)
+    }catch (error){
+        console.log("removeConversation:", conversationType, " targetId:", targetId, "=>", error);
+    }
+}
+
+export const setConversationToTop = async (conversationType, targetId, isTop)=>{
+    try {
+        return await RongIMLib.setConversationToTop(conversationType, targetId, isTop)
+    }catch (error){
+        console.log("removeConversation:", conversationType, " targetId:", targetId, " isTop:", isTop, "=>", error);
+    }
+}
 
 export const getConversationList2 = async (conversationTypeList)=>{
     return await RongIMLib.getConversationList2(conversationTypeList)

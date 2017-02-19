@@ -456,6 +456,69 @@ public class IMLibModule extends ReactContextBaseJavaModule implements RongIMCli
     //extra
 
     @ReactMethod
+    public void clearConversations(ReadableArray types, final Promise promise) {
+        if (client == null) {
+            promise.reject("NotLogined", "Must call connect first.");
+            return;
+        }
+        Conversation.ConversationType[] conversationTypes = new Conversation.ConversationType[types.size()];
+        for(int i=0;i<types.size();i++){
+            conversationTypes[i] = Conversation.ConversationType.valueOf(types.getString(i).toUpperCase());
+        }
+        client.clearConversations(new RongIMClient.ResultCallback<List<Conversation>>() {
+            @Override
+            public void onSuccess(List<Conversation> conversations) {
+                promise.resolve(Utils.convertConversationList(conversations));
+            }
+
+            @Override
+            public void onError(RongIMClient.ErrorCode errorCode) {
+                promise.reject("" + errorCode.getValue(), errorCode.getMessage());
+            }
+        }, conversationTypes);
+    }
+
+    @ReactMethod
+    public void removeConversation(String type, String targetId, final Promise promise) {
+        if (client == null) {
+            promise.reject("NotLogined", "Must call connect first.");
+            return;
+        }
+        Conversation.ConversationType conversationType = Conversation.ConversationType.valueOf(type.toUpperCase());
+        client.removeConversation(conversationType, targetId, new RongIMClient.ResultCallback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean ret) {
+                promise.resolve(ret);
+            }
+
+            @Override
+            public void onError(RongIMClient.ErrorCode errorCode) {
+                promise.reject("" + errorCode.getValue(), errorCode.getMessage());
+            }
+        });
+    }
+
+    @ReactMethod
+    public void setConversationToTop(String type, String targetId, Boolean isTop, final Promise promise) {
+        if (client == null) {
+            promise.reject("NotLogined", "Must call connect first.");
+            return;
+        }
+        Conversation.ConversationType conversationType = Conversation.ConversationType.valueOf(type.toUpperCase());
+        client.setConversationToTop(conversationType, targetId, isTop, new RongIMClient.ResultCallback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean ret) {
+                promise.resolve(ret);
+            }
+
+            @Override
+            public void onError(RongIMClient.ErrorCode errorCode) {
+                promise.reject("" + errorCode.getValue(), errorCode.getMessage());
+            }
+        });
+    }
+
+    @ReactMethod
     public void getConversationList2(ReadableArray types, final Promise promise) {
         if (client == null) {
             promise.reject("NotLogined", "Must call connect first.");
