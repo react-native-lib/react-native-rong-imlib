@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="rc_quit_custom_service">Custom Service Have Quit</string>
-    <string name="rc_init_failed">Failed Connect Custom Service</string>
+    <string name="rc_quit_custom_service" translatable="false">Custom Service Have Quit</string>
+    <string name="rc_init_failed" translatable="false">Failed Connect Custom Service</string>
 
     <string name="rc_notification_ticker_text">You have a new message</string>
 

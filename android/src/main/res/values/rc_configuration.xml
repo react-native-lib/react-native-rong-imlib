@@ -10,5 +10,5 @@
     <!-- 设置发送输入状态 -->
     <bool name="rc_typing_status">false</bool>
 
-    <string name="rc_media_message_default_save_path">/RongCloud/Media/</string>
+    <string name="rc_media_message_default_save_path" translatable="false">/RongCloud/Media/</string>
 </resources>
