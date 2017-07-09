@@ -7,11 +7,11 @@
  *
  */
 
-//  RCAmrDataConverter.h
+//  RCAMRDataConverter.h
 //  Created by Heq.Shinoda on 14-6-17.
 
-#ifndef __RCAmrDataConverter
-#define __RCAmrDataConverter
+#ifndef __RCAMRDataConverter
+#define __RCAMRDataConverter
 
 #include "interf_dec.h"
 #include "interf_enc.h"
@@ -39,6 +39,8 @@
  @return        WAV格式的音频数据
  */
 - (NSData *)decodeAMRToWAVE:(NSData *)data;
+
+- (NSData *)decodeAMRToWAVEWithoutHeader:(NSData *)data;
 
 /*!
  将WAV格式的音频数据转化为AMR格式的音频数据（8KHz采样）

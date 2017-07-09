@@ -7,7 +7,7 @@
  *
  */
 
-//  RongIMClient.h
+//  RCIMClient.h
 //  Created by xugang on 14/12/23.
 
 #ifndef __RongIMClient
@@ -28,6 +28,9 @@
 #import "RCUserInfo.h"
 #import "RCWatchKitStatusDelegate.h"
 #import "RCCustomerServiceGroupItem.h"
+#import "RCUserOnlineStatusInfo.h"
+#import "RCSearchConversationResult.h"
+#import "RCPushProfile.h"
 
 #pragma mark - 消息接收监听器
 
@@ -70,14 +73,18 @@
  请求消息已读回执（收到需要阅读时发送回执的请求，收到此请求后在会话页面已经展示该 messageUId 对应的消息或者调用 getHistoryMessages 获取消息的时候，包含此 messageUId 的消息，需要调用
  sendMessageReadReceiptResponse 接口发送消息阅读回执）
  
- @param messageUId 请求已读回执的消息ID
+ @param messageUId       请求已读回执的消息ID
+ @param conversationType conversationType
+ @param targetId         targetId
  */
 - (void)onMessageReceiptRequest:(RCConversationType)conversationType targetId:(NSString *)targetId messageUId:(NSString *)messageUId;
 
 /*!
  消息已读回执响应（收到阅读回执响应，可以按照 messageUId 更新消息的阅读数）
- 
- @param messageUId 已读回执的消息ID
+ @param messageUId       请求已读回执的消息ID
+ @param conversationType conversationType
+ @param targetId         targetId
+ @param userIdList 已读userId列表
  */
 - (void)onMessageReceiptResponse:(RCConversationType)conversationType targetId:(NSString *)targetId messageUId:(NSString *)messageUId readerList:(NSMutableDictionary *)userIdList;
 
@@ -107,6 +114,50 @@
 
 @end
 
+#pragma mark - 聊天室监听器
+
+/*!
+ IMLib聊天室状态的的监听器
+ 
+ @discussion
+ 设置IMLib的聊天室状态监听器，请参考RCIMClient的setChatRoomStatusDelegate:方法。
+ */
+@protocol RCChatRoomStatusDelegate <NSObject>
+
+/*!
+ 开始加入聊天室的回调
+ 
+ @param chatroomId 聊天室ID
+ */
+- (void)onChatRoomJoining:(NSString *)chatroomId;
+
+/*!
+ 加入聊天室成功的回调
+ 
+ @param chatroomId 聊天室ID
+ */
+- (void)onChatRoomJoined:(NSString *)chatroomId;
+
+/*!
+ 加入聊天室失败的回调
+ 
+ @param chatroomId 聊天室ID
+ @param errorCode  加入失败的错误码
+ 
+ @discussion 如果错误码是KICKED_FROM_CHATROOM或RC_CHATROOM_NOT_EXIST，则不会自动重新加入聊天室，App需要按照自己的逻辑处理。
+ */
+- (void)onChatRoomJoinFailed:(NSString *)chatroomId
+                   errorCode:(RCErrorCode)errorCode;
+
+/*!
+ 退出聊天室成功的回调
+ 
+ @param chatroomId 聊天室ID
+ */
+- (void)onChatRoomQuited:(NSString *)chatroomId;
+
+@end
+
 #pragma mark - 输入状态监听器
 
 /*!
@@ -132,6 +183,26 @@
 - (void)onTypingStatusChanged:(RCConversationType)conversationType
                      targetId:(NSString *)targetId
                        status:(NSArray *)userTypingStatusList;
+
+@end
+
+#pragma mark - 日志监听器
+/*!
+ IMLib日志的监听器
+ 
+ @discussion
+ 设置IMLib日志的监听器，请参考RCIMClient的setRCLogInfoDelegate:方法。
+ 
+ @discussion 您可以通过logLevel来控制日志的级别。
+ */
+@protocol RCLogInfoDelegate <NSObject>
+
+/*!
+ IMLib日志的回调
+ 
+ @param logInfo 日志信息
+ */
+- (void)didOccurLog:(NSString *)logInfo;
 
 @end
 
@@ -220,17 +291,33 @@
 /*!
  设置导航服务器和上传文件服务器信息
 
- @param naviServer     导航服务器地址, 域名(cn.xxx.com[:port])或者 IP
- 地址(xxx.xxx.xxx.xxx[:port]),默认端口为80
- @param fileServer     文件服务器地址, 域名(cn.xxx.com[:port])或者 IP
- 地址(xxx.xxx.xxx.xxx[:port]),默认端口为80
+ @param naviServer     导航服务器地址，具体的格式参考下面的说明
+ @param fileServer     文件服务器地址，具体的格式参考下面的说明
  @return               是否设置成功
 
- @warning 仅限独立数据中心使用，使用前必须先联系商务开通。
+ @warning 仅限独立数据中心使用，使用前必须先联系商务开通。必须在SDK init之前进行设置。
  @discussion
  naviServer必须为有效的服务器地址，fileServer如果想使用默认的，可以传nil。
+ naviServer和fileServer的格式说明：
+ 1、如果使用https，则设置为https://cn.xxx.com:port或https://cn.xxx.com格式，其中域名部分也可以是IP，如果不指定端口，将默认使用443端口。
+ 2、如果使用http，则设置为cn.xxx.com:port或cn.xxx.com格式，其中域名部分也可以是IP，如果不指定端口，将默认使用80端口。
  */
 - (BOOL)setServerInfo:(NSString *)naviServer fileServer:(NSString *)fileServer;
+
+/**
+ 设置统计服务器的信息
+
+ @param statisticServer 统计服务器地址，具体的格式参考下面的说明
+ @return 是否设置成功
+ 
+ @warning 仅限独立数据中心使用，使用前必须先联系商务开通。必须在SDK init和setDeviceToken之前进行设置。
+ @discussion
+ statisticServer必须为有效的服务器地址，否则会造成推送等业务不能正常使用。
+ 格式说明：
+ 1、如果使用https，则设置为https://cn.xxx.com:port或https://cn.xxx.com格式，其中域名部分也可以是IP，如果不指定端口，将默认使用443端口。
+ 2、如果使用http，则设置为cn.xxx.com:port或cn.xxx.com格式，其中域名部分也可以是IP，如果不指定端口，将默认使用80端口。
+ */
+- (BOOL)setStatisticServer:(NSString *)statisticServer;
 
 #pragma mark - 连接与断开服务器
 
@@ -456,7 +543,7 @@
 
 
 /*!
- 发送媒体消息（图片消息或文本消息）
+ 发送媒体消息（图片消息或文件消息）
  
  @param conversationType    发送消息的会话类型
  @param targetId            发送消息的目标会话ID
@@ -468,6 +555,7 @@
  @param successBlock        消息发送成功的回调 [messageId:消息的ID]
  @param errorBlock          消息发送失败的回调 [errorCode:发送失败的错误码,
  messageId:消息的ID]
+ @param cancelBlock         用户取消了消息发送的回调 [messageId:消息的ID]
  @return                    发送的消息实体
  
  @discussion 当接收方离线并允许远程推送时，会收到远程推送。
@@ -496,7 +584,8 @@
                        pushData:(NSString *)pushData
                        progress:(void (^)(int progress, long messageId))progressBlock
                         success:(void (^)(long messageId))successBlock
-                          error:(void (^)(RCErrorCode errorCode, long messageId))errorBlock;
+                          error:(void (^)(RCErrorCode errorCode, long messageId))errorBlock
+                         cancel:(void (^)(long messageId))cancelBlock;
 
 /*!
  发送媒体消息(上传图片或文件等媒体信息到指定的服务器)
@@ -513,6 +602,7 @@
  @param successBlock        消息发送成功的回调 [messageId:消息的ID]
  @param errorBlock          消息发送失败的回调 [errorCode:发送失败的错误码,
  messageId:消息的ID]
+ @param cancelBlock         用户取消了消息发送的回调 [messageId:消息的ID]
  @return                    发送的消息实体
  
  @discussion 此方法仅用于IMKit。
@@ -534,7 +624,17 @@
                   uploadPrepare:(void (^)(RCUploadMediaStatusListener *uploadListener))uploadPrepareBlock
                        progress:(void (^)(int progress, long messageId))progressBlock
                         success:(void (^)(long messageId))successBlock
-                          error:(void (^)(RCErrorCode errorCode, long messageId))errorBlock;
+                          error:(void (^)(RCErrorCode errorCode, long messageId))errorBlock
+                         cancel:(void (^)(long messageId))cancelBlock;
+
+/*!
+ 取消发送中的媒体信息
+ 
+ @param messageId           媒体消息的messageId
+ 
+ @return YES表示取消成功，NO表示取消失败，即已经发送成功或者消息不存在。
+ */
+- (BOOL)cancelSendMediaMessage:(long)messageId;
 
 /*!
  插入消息
@@ -573,6 +673,23 @@ __deprecated_msg("已废弃，请勿使用。");
                             targetId:(NSString *)targetId
                           sentStatus:(RCSentStatus)sentStatus
                              content:(RCMessageContent *)content;
+/*!
+ 插入接收的消息
+ 
+ @param conversationType    会话类型
+ @param targetId            目标会话ID
+ @param senderUserId        发送者ID
+ @param receivedStatus      接收状态
+ @param content             消息的内容
+ @return                    插入的消息实体
+ 
+ @discussion 此方法不支持聊天室的会话类型。
+ */
+- (RCMessage *)insertIncomingMessage:(RCConversationType)conversationType
+                            targetId:(NSString *)targetId
+                        senderUserId:(NSString *)senderUserId
+                      receivedStatus:(RCReceivedStatus)receivedStatus
+                             content:(RCMessageContent *)content;
 
 /*!
  插入向外发送的、指定时间的消息
@@ -586,11 +703,11 @@ __deprecated_msg("已废弃，请勿使用。");
  
  @discussion 此方法不支持聊天室的会话类型。如果sentTime<=0，则被忽略，会以插入时的时间为准。
  */
-- (RCMessage *)insertOutgoingMessage:(RCConversationType)conversationType
-                            targetId:(NSString *)targetId
-                          sentStatus:(RCSentStatus)sentStatus
-                             content:(RCMessageContent *)content
-                            sentTime:(long long)sentTime;
+//- (RCMessage *)insertOutgoingMessage:(RCConversationType)conversationType
+//                            targetId:(NSString *)targetId
+//                          sentStatus:(RCSentStatus)sentStatus
+//                             content:(RCMessageContent *)content
+//                            sentTime:(long long)sentTime;
 
 /*!
  下载消息内容中的媒体信息
@@ -629,37 +746,37 @@ __deprecated_msg("已废弃，请勿使用。");
                       cancel:(void (^)())cancelBlock;
 
 /*!
- 取消下载消息中的媒体信息
+ 取消下载中的媒体信息
  
- @param messageId           媒体消息的messageId
+ @param messageId 媒体消息的messageId
  
- @return true取消成功。false下载完成或者下载不存在
+ @return YES表示取消成功，NO表示取消失败，即已经下载完成或者消息不存在。
  */
 - (BOOL)cancelDownloadMediaMessage:(long)messageId;
 
-/*!
- 发送状态消息
-
- @param conversationType    会话类型
- @param targetId            目标会话ID
- @param content             消息内容
- @param successBlock        发送消息成功的回调 [messageId:消息的ID]
- @param errorBlock          发送消息失败的回调 [nErrorCode:发送失败的错误码,
- messageId:消息的ID]
-
- @discussion 通过此方法发送的消息，根据接收方的状态进行投递。
- 如果接收方不在线，则不会收到远程推送，再上线也不会收到此消息。
-
- @warning **已废弃，请勿使用。**
- 升级说明：如果您之前使用了此接口，可以直接替换为sendMessage:targetId:content:pushContent:pushData:success:error:接口（pushContent和pushData传为nil），行为和实现完全一致。
- */
-- (RCMessage *)sendStatusMessage:(RCConversationType)conversationType
-                        targetId:(NSString *)targetId
-                         content:(RCMessageContent *)content
-                         success:(void (^)(long messageId))successBlock
-                           error:(void (^)(RCErrorCode nErrorCode,
-                                           long messageId))errorBlock
-    __deprecated_msg("已废弃，请勿使用。");
+///*!
+// 发送状态消息
+//
+// @param conversationType    会话类型
+// @param targetId            目标会话ID
+// @param content             消息内容
+// @param successBlock        发送消息成功的回调 [messageId:消息的ID]
+// @param errorBlock          发送消息失败的回调 [nErrorCode:发送失败的错误码,
+// messageId:消息的ID]
+//
+// @discussion 通过此方法发送的消息，根据接收方的状态进行投递。
+// 如果接收方不在线，则不会收到远程推送，再上线也不会收到此消息。
+//
+// @warning **已废弃，请勿使用。**
+// 升级说明：如果您之前使用了此接口，可以直接替换为sendMessage:targetId:content:pushContent:pushData:success:error:接口（pushContent和pushData传为nil），行为和实现完全一致。
+// */
+//- (RCMessage *)sendStatusMessage:(RCConversationType)conversationType
+//                        targetId:(NSString *)targetId
+//                         content:(RCMessageContent *)content
+//                         success:(void (^)(long messageId))successBlock
+//                           error:(void (^)(RCErrorCode nErrorCode,
+//                                           long messageId))errorBlock
+//    __deprecated_msg("已废弃，请勿使用。");
 
 /*!
  发送消息
@@ -732,7 +849,7 @@ __deprecated_msg("已废弃，请勿使用。");
  如果您使用IMKit，请使用RCIM中的同名方法发送图片消息，否则不会自动更新UI。
  
  @warning **已废弃，请勿使用。**
- 升级说明：如果您之前使用了此接口，可以直接替换为sendMediaMessage:targetId:content:pushContent:pushData:progress:success:error:接口（pushData传为nil），行为和实现完全一致。
+ 升级说明：如果您之前使用了此接口，可以直接替换为sendMediaMessage:targetId:content:pushContent:pushData:progress:success:error:cancel:接口（pushData传为nil），行为和实现完全一致。
  */
 - (RCMessage *)
 sendImageMessage:(RCConversationType)conversationType
@@ -774,7 +891,7 @@ sendImageMessage:(RCConversationType)conversationType
  如果您使用IMKit，请使用RCIM中的同名方法发送图片消息，否则不会自动更新UI。
 
  @warning **已废弃，请勿使用。**
- 升级说明：如果您之前使用了此接口，可以直接替换为sendMediaMessage:targetId:content:pushContent:pushData:progress:success:error:接口，行为和实现完全一致。
+ 升级说明：如果您之前使用了此接口，可以直接替换为sendMediaMessage:targetId:content:pushContent:pushData:progress:success:error:cancel:接口，行为和实现完全一致。
  */
 - (RCMessage *)
 sendImageMessage:(RCConversationType)conversationType
@@ -811,7 +928,7 @@ sendImageMessage:(RCConversationType)conversationType
  或sendMessage:targetId:content:pushContent:success:error:方法进行发送，不要使用此方法。
 
  @warning **已废弃，请勿使用。**
- 升级说明：如果您之前使用了此接口，可以直接替换为sendMediaMessage:targetId:content:pushContent:pushData:uploadPrepare:progress:success:error:接口，行为和实现完全一致。
+ 升级说明：如果您之前使用了此接口，可以直接替换为sendMediaMessage:targetId:content:pushContent:pushData:uploadPrepare:progress:success:error:cancel:接口，行为和实现完全一致。
  */
 - (RCMessage *)
 sendImageMessage:(RCConversationType)conversationType
@@ -825,6 +942,36 @@ sendImageMessage:(RCConversationType)conversationType
          success:(void (^)(long messageId))successBlock
            error:(void (^)(RCErrorCode errorCode, long messageId))errorBlock
     __deprecated_msg("已废弃，请勿使用。");
+
+/*!
+ 发送定向消息
+ 
+ @param conversationType 发送消息的会话类型
+ @param targetId         发送消息的目标会话ID
+ @param userIdList       发送给的用户ID列表
+ @param content          消息的内容
+ @param pushContent      接收方离线时需要显示的远程推送内容
+ @param pushData         接收方离线时需要在远程推送中携带的非显示数据
+ @param successBlock     消息发送成功的回调 [messageId:消息的ID]
+ @param errorBlock       消息发送失败的回调 [errorCode:发送失败的错误码,
+ messageId:消息的ID]
+ 
+ @return 发送的消息实体
+ 
+ @discussion 此方法用于在群组和讨论组中发送消息给其中的部分用户，其它用户不会收到这条消息。
+ 如果您使用IMLib，可以使用此方法发送定向消息；
+ 如果您使用IMKit，请使用RCIM中的同名方法发送定向消息，否则不会自动更新UI。
+ 
+ @warning 此方法目前仅支持群组和讨论组。
+ */
+- (RCMessage *)sendDirectionalMessage:(RCConversationType)conversationType
+                             targetId:(NSString *)targetId
+                         toUserIdList:(NSArray *)userIdList
+                              content:(RCMessageContent *)content
+                          pushContent:(NSString *)pushContent
+                             pushData:(NSString *)pushData
+                              success:(void (^)(long messageId))successBlock
+                                error:(void (^)(RCErrorCode nErrorCode, long messageId))errorBlock;
 
 #pragma mark 消息接收监听
 /*!
@@ -872,6 +1019,8 @@ FOUNDATION_EXPORT NSString *const RCLibDispatchReadReceiptNotification;
  @param conversationType    会话类型
  @param targetId            目标会话ID
  @param timestamp           该会话中已阅读的最后一条消息的发送时间戳
+ @param successBlock        发送成功的回调
+ @param errorBlock          发送失败的回调[nErrorCode: 失败的错误码]
 
  @discussion 此接口只支持单聊, 如果使用Lib 可以注册监听
  RCLibDispatchReadReceiptNotification 通知,使用kit 直接设置RCIM.h
@@ -881,7 +1030,70 @@ FOUNDATION_EXPORT NSString *const RCLibDispatchReadReceiptNotification;
  */
 - (void)sendReadReceiptMessage:(RCConversationType)conversationType
                       targetId:(NSString *)targetId
-                          time:(long long)timestamp;
+                          time:(long long)timestamp
+                       success:(void (^)())successBlock
+                         error:(void (^)(RCErrorCode nErrorCode))errorBlock;
+
+/*!
+ 请求消息阅读回执
+ 
+ @param message      要求阅读回执的消息
+ @param successBlock 请求成功的回调
+ @param errorBlock   请求失败的回调[nErrorCode: 失败的错误码]
+ 
+ @discussion 通过此接口，可以要求阅读了这条消息的用户发送阅读回执。
+ */
+- (void)sendReadReceiptRequest:(RCMessage *)message
+                       success:(void (^)())successBlock
+                         error:(void (^)(RCErrorCode nErrorCode))errorBlock;
+
+/*!
+ 发送阅读回执
+ 
+ @param conversationType 会话类型
+ @param targetId         会话ID
+ @param messageList      已经阅读了的消息列表
+ @param successBlock     发送成功的回调
+ @param errorBlock       发送失败的回调[nErrorCode: 失败的错误码]
+ 
+ @discussion 当用户阅读了需要阅读回执的消息，可以通过此接口发送阅读回执，消息的发送方即可直接知道那些人已经阅读。
+ */
+- (void)sendReadReceiptResponse:(RCConversationType)conversationType
+                       targetId:(NSString *)targetId
+                    messageList:(NSArray<RCMessage *> *)messageList
+                        success:(void (^)())successBlock
+                          error:(void (^)(RCErrorCode nErrorCode))errorBlock;
+
+/*!
+ 同步会话阅读状态
+ 
+ @param conversationType 会话类型
+ @param targetId         会话ID
+ @param timestamp        已经阅读的最后一条消息的Unix时间戳(毫秒)
+ @param successBlock     同步成功的回调
+ @param errorBlock       同步失败的回调[nErrorCode: 失败的错误码]
+ */
+- (void)syncConversationReadStatus:(RCConversationType)conversationType
+                          targetId:(NSString *)targetId
+                              time:(long long)timestamp
+                           success:(void (^)())successBlock
+                             error:(void (^)(RCErrorCode nErrorCode))errorBlock;
+
+/*!
+ 撤回消息
+ 
+ @param message      需要撤回的消息
+ @param pushContent 当下发 push 消息时，在通知栏里会显示这个字段。如果不设置该字段，无法接受到 push 推送。
+ @param successBlock 撤回成功的回调 [messageId:撤回的消息ID，该消息已经变更为新的消息]
+ @param errorBlock   撤回失败的回调 [errorCode:撤回失败错误码]
+ 
+ @warning 仅支持单聊、群组和讨论组。
+ */
+- (void)recallMessage:(RCMessage *)message
+          pushContent:(NSString *)pushContent
+              success:(void (^)(long messageId))successBlock
+                error:(void(^)(RCErrorCode errorcode))errorBlock;
+
 
 /*!
  撤回消息
@@ -977,6 +1189,25 @@ FOUNDATION_EXPORT NSString *const RCLibDispatchReadReceiptNotification;
                           count:(int)count;
 
 /*!
+ 在会话中搜索指定消息的前 beforeCount 数量和后 afterCount 数量的消息。返回的消息列表中会包含指定的消息。消息列表时间顺序从旧到新。
+ 
+ @param conversationType    会话类型
+ @param targetId            目标会话ID
+ @param sentTime            消息的发送时间
+ @param beforeCount         指定消息的前部分消息数量
+ @param afterCount          指定消息的后部分消息数量
+ @return                    消息实体RCMessage对象列表
+ 
+ @discussion
+ 获取该会话的这条消息及这条消息前 beforeCount 条和后 afterCount 条消息,如前后消息不够则返回实际数量的消息。
+ */
+- (NSArray *)getHistoryMessages:(RCConversationType)conversationType
+                       targetId:(NSString *)targetId
+                       sentTime:(long long)sentTime
+                    beforeCount:(int)beforeCount
+                     afterCount:(int)afterCount;
+
+/*!
  从服务器端获取之前的历史消息
 
  @param conversationType    会话类型
@@ -996,6 +1227,26 @@ FOUNDATION_EXPORT NSString *const RCLibDispatchReadReceiptNotification;
                            count:(int)count
                          success:(void (^)(NSArray *messages))successBlock
                            error:(void (^)(RCErrorCode status))errorBlock;
+
+/*!
+ 从服务器端获取聊天室的历史消息
+ @param targetId            聊天室ID
+ @param recordTime          起始的消息发送时间戳，毫秒
+ @param count               需要获取的消息数量， 0 < count <= 200
+ @param order               拉取顺序，RC_Timestamp_Desc:倒序，RC_Timestamp_ASC:正序
+ @param successBlock        获取成功的回调 [messages:获取到的历史消息数组, syncTime:下次拉取消息的时间戳]
+ @param errorBlock          获取失败的回调 [status:获取失败的错误码]
+ 
+ @discussion
+ 此方法从服务器端获取聊天室的历史消息，但是必须先开通聊天室消息云存储功能。
+ 指定开始时间,比如2016年9月1日10点(1472695200000), 默认是0(正序:从存储的第一条消息开始拉取,倒序:从存储的最后一条消息开始拉取)
+ */
+- (void)getRemoteChatroomHistoryMessages:(NSString *)targetId
+                              recordTime:(long long)recordTime
+                                   count:(int)count
+                                   order:(RCTimestampOrder)order
+                                 success:(void (^)(NSArray *messages, long long syncTime))successBlock
+                                   error:(void (^)(RCErrorCode status))errorBlock;
 
 /*!
  获取会话中@提醒自己的消息
@@ -1223,6 +1474,14 @@ FOUNDATION_EXPORT NSString *const RCLibDispatchReadReceiptNotification;
 - (int)getUnreadCount:(NSArray *)conversationTypes;
 
 /*!
+ 获取某个类型的会话中所有未读的被@的消息数
+ 
+ @param conversationTypes   会话类型的数组
+ @return                    该类型的会话中所有未读的被@的消息数
+ */
+- (int)getUnreadMentionedCount:(NSArray *)conversationTypes;
+
+/*!
  清除某个会话中的未读消息数
 
  @param conversationType    会话类型，不支持聊天室
@@ -1257,7 +1516,7 @@ FOUNDATION_EXPORT NSString *const RCLibDispatchReadReceiptNotification;
  @param errorBlock                  设置失败的回调 [status:设置失败的错误码]
 
  @discussion
- 如果您使用IMLib，此方法会屏蔽该会话的远程推送；如果您使用IMKit，此方法会屏蔽该会话的所有提醒（远程推送、本地通知、前台提示音）。
+ 如果您使用IMLib，此方法会屏蔽该会话的远程推送；如果您使用IMKit，此方法会屏蔽该会话的所有提醒（远程推送、本地通知、前台提示音）,该接口不支持聊天室。
  */
 - (void)
 setConversationNotificationStatus:(RCConversationType)conversationType
@@ -1604,7 +1863,7 @@ getConversationNotificationStatus:(RCConversationType)conversationType
 
  @discussion
  可以通过传入的messageCount设置加入聊天室成功之后，需要获取的历史消息数量。
- -1表示不获取任何历史消息，0表示不特殊设置而使用SDK默认的设置（默认为获取10条），0<messageCount<=50为具体获取的消息数量,最大值为50。
+ -1表示不获取任何历史消息，0表示不特殊设置而使用SDK默认的设置（默认为获取10条），0<messageCount<=50为具体获取的消息数量,最大值为50。注：如果是7.x系统获取历史消息数量不要大于30
  */
 - (void)joinChatRoom:(NSString *)targetId
         messageCount:(int)messageCount
@@ -1663,6 +1922,13 @@ getConversationNotificationStatus:(RCConversationType)conversationType
                   order:(RCChatRoomMemberOrder)order
                 success:(void (^)(RCChatRoomInfo *chatRoomInfo))successBlock
                   error:(void (^)(RCErrorCode status))errorBlock;
+
+/*!
+ 设置IMLib的聊天室状态监听器
+ 
+ @param delegate IMLib聊天室状态监听器
+ */
+- (void)setChatRoomStatusDelegate:(id<RCChatRoomStatusDelegate>)delegate;
 
 #pragma mark - 公众服务
 
@@ -1750,8 +2016,7 @@ getConversationNotificationStatus:(RCConversationType)conversationType
  @param onSuccess                       获取成功的回调
  [serviceProfile:获取到的公众账号信息]
  @param onError                         获取失败的回调 [error:失败的错误码]
- @return                                公众服务账号的信息
-
+ 
  @discussion 此方法会从服务器获取公众服务账号信息
  */
 - (void)getPublicServiceProfile:(NSString *)targetId
@@ -1766,6 +2031,9 @@ getConversationNotificationStatus:(RCConversationType)conversationType
 
  @param URLString   准备打开的URL
  @return            公众服务使用的WebView Controller
+ 
+ @discussion 如果您选在用WebView打开URL连接，则您需要在App的Info.plist的NSAppTransportSecurity中增加NSAllowsArbitraryLoadsInWebContent和NSAllowsArbitraryLoads字段，并在苹果审核的时候提供额外的说明。
+ 更多内容可以参考：https://developer.apple.com/library/content/documentation/General/Reference/InfoPlistKeyReference/Articles/CocoaKeys.html#//apple_ref/doc/uid/TP40009251-SW55
  */
 - (UIViewController *)getPublicServiceWebViewController:(NSString *)URLString;
 
@@ -1834,12 +2102,27 @@ getConversationNotificationStatus:(RCConversationType)conversationType
 - (NSString *)getSDKVersion;
 
 /*!
- 将AMR格式的音频数据转化为WAV格式的音频数据
+ 获取当前手机与服务器的时间差
+ 
+ @return 时间差
+ */
+- (long long)getDeltaTime;
+
+/*!
+ 将AMR格式的音频数据转化为WAV格式的音频数据，数据开头携带WAVE文件头
 
  @param data    AMR格式的音频数据，必须是AMR-NB的格式
  @return        WAV格式的音频数据
  */
 - (NSData *)decodeAMRToWAVE:(NSData *)data;
+
+/*!
+ 将AMR格式的音频数据转化为WAV格式的音频数据，数据开头不携带WAVE文件头
+ 
+ @param data    AMR格式的音频数据，必须是AMR-NB的格式
+ @return        WAV格式的音频数据
+ */
+- (NSData *)decodeAMRToWAVEWithoutHeader:(NSData *)data;
 
 /*!
  将WAV格式的音频数据转化为AMR格式的音频数据（8KHz采样）
@@ -1933,7 +2216,7 @@ startCustomerService:(NSString *)kefuId
  @discussion 此方法依赖startCustomerService方法。可在客服结束之前或之后调用。
  @discussion
  有些客服服务商需要对机器人回答的词条进行评价，机器人回答的文本消息的extra带有{“robotEva”:”1”,
- “sid”:”xxx”}字段，当用户对这一条消息评价后调用本函数同步到服务器，knownledgedID为extra中的sid。若是离开会话评价，knownledgedID填nil
+ “sid”:”xxx”}字段，当用户对这一条消息评价后调用本函数同步到服务器，knownledgedID为extra中的sid。若是离开会话触发的评价或者在加号扩展中主动触发的评价，knownledgedID填nil
 
  @warning
  如果你使用IMKit，请不要使用此方法。RCConversationViewController默认已经做了处理。
@@ -1949,11 +2232,11 @@ startCustomerService:(NSString *)kefuId
  @param kefuId                客服ID
  @param dialogId              对话ID，客服请求评价的对话ID
  @param value                 分数，取值范围1-5
- @param suggest                客户建议
+ @param suggest               客户建议
 
  @discussion 此方法依赖startCustomerService方法。可在客服结束之前或之后调用。
  @discussion
- 有些客服服务商会主动邀请评价，pullEvaluationBlock会被调用到，当评价完成后调用本函数同步到服务器，dialogId填pullEvaluationBlock返回的dialogId。若是离开会话触发的评价，dialogID为nil
+ 有些客服服务商会主动邀请评价，pullEvaluationBlock会被调用到，当评价完成后调用本函数同步到服务器，dialogId填pullEvaluationBlock返回的dialogId。若是离开会话触发的评价或者在加号扩展中主动触发的评价，dialogID为nil
 
  @warning
  如果你使用IMKit，请不要使用此方法。RCConversationViewController默认已经做了处理。
@@ -1963,62 +2246,94 @@ startCustomerService:(NSString *)kefuId
                      humanValue:(int)value
                         suggest:(NSString *)suggest;
 
-/**
- *  群组消息请求回执（对于需要阅读之后收到阅读回执的消息，可以调用这个接口来发送阅读回执请求）
- *
- *  @param conversationType 会话类型
- *  @param targetId         targetId
- *  @param messageUId       messageUId
- *  @param successBlock     successBlock
- *  @param errorBlock       errorBlock
- *
- *  @return
+/*!
+ 通用客服评价，不区分机器人人工
+ 
+ @param kefuId                客服ID
+ @param dialogId              对话ID，客服请求评价的对话ID
+ @param value                 分数，取值范围1-5
+ @param suggest               客户建议
+ @param resolveStatus         解决状态，如果没有解决状态，这里可以随意赋值，SDK不会处理
+ @discussion 此方法依赖startCustomerService方法。可在客服结束之前或之后调用。
+ @discussion
+ 有些客服服务商会主动邀请评价，pullEvaluationBlock会被调用到，当评价完成后调用本函数同步到服务器，dialogId填pullEvaluationBlock返回的dialogId。若是离开会话触发的评价或者在加号扩展中主动触发的评价，dialogID为nil
+ @warning
+ 如果你使用IMKit，请不要使用此方法。RCConversationViewController默认已经做了处理。
  */
-- (void)sendReadReceiptRequest:(RCMessage *)message
-                              success:(void (^)())successBlock
-                                error:(void (^)(RCErrorCode nErrorCode))errorBlock;
+- (void)evaluateCustomerService:(NSString *)kefuId
+                       dialogId:(NSString *)dialogId
+                     starValue:(int)value
+                        suggest:(NSString *)suggest
+                  resolveStatus:(RCCSResolveStatus)resolveStatus;
 
-/**
- *  已读回执（当收到阅读回执请求的时候，展现消息后可以调用此接口来发送消息阅读回执）
- *
- *  @param conversationType 会话类型
- *  @param targetId         targetId
- *  @param messageList      messageList
- *  @param successBlock     successBlock
- *  @param errorBlock       errorBlock
- *
- *  @return
+/*!
+ 客服留言
+ 
+ @param kefuId                客服ID
+ @param leaveMessageDic       客服留言信息字典，根据RCCSLeaveMessageItem中关于留言的配置存储对应的key-value
+ @discussion 此方法依赖startCustomerService方法。可在客服结束之前或之后调用。
+ @discussion 如果一些值没有，可以传nil
+ @warning
+ 如果你使用IMKit，请不要使用此方法。RCConversationViewController默认已经做了处理。
  */
-- (void)sendReadReceiptResponse:(RCConversationType)conversationType
-                              targetId:(NSString *)targetId
-                           messageList:(NSArray<RCMessage *> *)messageList
-                               success:(void (^)())successBlock
-                                 error:(void (^)(RCErrorCode nErrorCode))errorBlock;
+- (void)leaveMessageCustomerService:(NSString *)kefuId
+                    leaveMessageDic:(NSDictionary *)leaveMessageDic
+                            success:(void (^)())successBlock
+                               failure:(void (^)())failureBlock;
+#pragma mark - 搜索
 
-
-/**
- *  同步会话阅读状态
- *
- *  @param conversationType 会话类型
- *  @param targetId         targetId
- *  @param successBlock     successBlock
- *  @param errorBlock       errorBlock
+/*!
+ 根据关键字搜索指定会话中的消息
+ 
+ @param conversationType 会话类型
+ @param targetId         会话ID
+ @param keyword          关键字
+ @param count            最大的查询数量
+ @param startTime        查询记录的起始时间（传 0 表示不限时间）
+ 
+ @return 匹配的消息列表
  */
-- (void)syncConversationReadStatus:(RCConversationType)conversationType
-                     targetId:(NSString *)targetId
-                         time:(long long)timestamp
-                      success:(void (^)())successBlock
-                        error:(void (^)(RCErrorCode nErrorCode))errorBlock;
+- (NSArray <RCMessage *>*)searchMessages:(RCConversationType)conversationType
+                                targetId:(NSString *)targetId
+                                 keyword:(NSString *)keyword
+                                   count:(int)count
+                               startTime:(long long)startTime;
 
+/*!
+ 根据关键字搜索会话
+ 
+ @param conversationTypeList 需要搜索的会话类型列表
+ @param objectNameList       需要搜索的消息类型名列表(即每个消息类方法getObjectName的返回值)
+ @param keyword              关键字
+ 
+ @return 匹配的会话搜索结果列表
+ 
+ @discussion 目前，SDK内置的文本消息、文件消息、图文消息支持搜索。
+ 自定义的消息必须要实现RCMessageContent的getSearchableWords接口才能进行搜索。
+ */
+- (NSArray<RCSearchConversationResult *> *)searchConversations:
+                                               (NSArray<NSNumber *> *)conversationTypeList
+                                                   messageType:(NSArray<NSString *> *)objectNameList
+                                                       keyword:(NSString *)keyword;
 
-#pragma mark - Log
+#pragma mark - 日志
 
 /*!
  设置日志级别
  */
 @property (nonatomic, assign) RCLogLevel logLevel;
 
+/*!
+ 设置IMLib日志的监听器
+ 
+ @param delegate IMLib日志的监听器
+
+ @discussion 您可以通过logLevel来控制日志的级别。
+ */
+- (void)setRCLogInfoDelegate: (id<RCLogInfoDelegate>)delegate;
+
 #pragma mark - File Storage
+
 /*!
  文件消息下载路径
  
@@ -2026,6 +2341,19 @@ startCustomerService:(NSString *)kefuId
  */
 @property (nonatomic, strong, readonly) NSString *fileStoragePath;
 
+#pragma mark - 第三方平台厂商接口
+/*!
+ 获取Vendor token. 仅供融云第三方服务厂家使用。
+ 
+ @param  successBlock 成功回调
+ @param  errorBlock   失败回调
+ */
+- (void)getVendorToken:(void (^)(NSString *vendorToken))successBlock
+                 error:(void (^)(RCErrorCode nErrorCode))errorBlock;
+
+
+//远程推送相关设置
+@property(nonatomic,strong,readonly)RCPushProfile *pushProfile;
 @end
 
 #endif
