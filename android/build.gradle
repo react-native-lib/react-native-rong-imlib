@@ -24,5 +24,5 @@ android {
 
 dependencies {
     compile 'com.facebook.react:react-native:+'
-    compile files('libs/Rong_IMLib_v2_7_3.jar')
+    compile files('libs/Rong_IMLib_v2_8_12.jar')
 }
