@@ -45,3 +45,5 @@ Example
 
 .idea
 *.iml
+
+*.tgz
